@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin name="bitcoin">
+	<title>Bitcoin</title>
+	<summary>Plugin that lets you accept bitcoin on your Subrion CMS powered site!</summary>
+	<author>Janur Jangaraev</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.4.0</version>
+	<date>2015-09-01</date>
+	<compatibility>3.4</compatibility>
+
+	<adminpages>
+		<page name="bitcoin" url="bitcoin/" group="financial" menus="menu">Bitcoin</page>
+	</adminpages>
+
+	<pages>
+		<page url="bitcoin/" name="bitcoin" readonly="1">Bitcoin</page>
+	</pages>
+
+	<hooks>
+		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front"><![CDATA[
+if ('pay' == $iaView->name())
+{
+	if ($transaction = $iaView->getValues('transaction'))
+	{
+		$buttonId = $iaCore->factoryPlugin('bitcoin', 'common')->createButton($transaction);
+
+		$iaView->assign('bitcoin_button_id', $buttonId);
+	}
+}
+		]]>
+		</hook>
+		<hooks>
+			<hook name="paymentButtons" type="smarty" filename="plugins/bitcoin/templates/button.tpl" page_type="front"><![CDATA[]]></hook>
+		</hooks>
+	</hooks>
+
+	<phrases>
+		<phrase category="admin" key="authorize_in_bitcoin">Authorize in Bitcoin</phrase>
+		<phrase category="admin" key="authorization_succeed">Successfully authorized the application in Bitcoin API.</phrase>
+	</phrases>
+
+	<install>
+		<sql>
+			<![CDATA[
+INSERT INTO `{prefix}payment_gateways`(`name`,`gateway`,`plugin`) VALUES
+('bitcoin', 'Bitcoin', 'bitcoin');
+			]]>
+		</sql>
+	</install>
+
+	<uninstall>
+		<sql>
+			<![CDATA[
+DELETE FROM `{prefix}payment_gateways` WHERE `plugin` = 'bitcoin';
+			]]>
+		</sql>
+	</uninstall>
+</plugin>
