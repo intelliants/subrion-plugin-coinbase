@@ -10,8 +10,8 @@ class iaBitcoin extends abstractPlugin
 	const HTTP_STATUS_OK = 200;
 
 	protected $_config = array(
-		'client_id' => '4ecc81332cc91bfb535c98ba0ae6268934271970b77b47824707e6235f51b4f4',
-		'client_secret' => '73306e4bb5cdb64e40cf6d858c3aaccc0706dadf55b40c4014e533c5b6586972'
+		'client_id' => 'XXX',
+		'client_secret' => 'XXX'
 	);
 
 	protected $_redirectUri;
