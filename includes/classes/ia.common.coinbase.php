@@ -33,10 +33,10 @@ class iaCoinbase extends abstractModuleAdmin
 
     const HTTP_STATUS_OK = 200;
 
-    protected $_config = array(
+    protected $_config = [
         'client_id' => 'XXX',
         'client_secret' => 'XXX'
-    );
+    ];
 
     protected $_redirectUri;
 
@@ -66,16 +66,16 @@ class iaCoinbase extends abstractModuleAdmin
 
     public function getAuthorizeUrl()
     {
-        $url = $this->_composeUrl('authorize', array(
+        $url = $this->_composeUrl('authorize', [
             'response_type' => 'code',
             'client_id' => $this->getConfig('client_id'),
             'redirect_uri' => $this->_redirectUri
-        ));
+        ]);
 
         return $url;
     }
 
-    protected function _composeUrl($action, array $params = array())
+    protected function _composeUrl($action, array $params = [])
     {
         $result = self::OAUTH_URL . $action;
         empty($params) || $result .= '?' . http_build_query($params);
@@ -83,19 +83,19 @@ class iaCoinbase extends abstractModuleAdmin
         return $result;
     }
 
-    protected function _httpRequest($url, array $params = array(), $json = false)
+    protected function _httpRequest($url, array $params = [], $json = false)
     {
-        $options = array(
+        $options = [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $params,
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYPEER => false
-        );
+        ];
 
         if ($json) {
-            $options[CURLOPT_HTTPHEADER] = array('Content-Type: application/json');
-            $options[CURLOPT_POSTFIELDS] = iaUtil::jsonEncode($params);
+            $options[CURLOPT_HTTPHEADER] = ['Content-Type: application/json'];
+            $options[CURLOPT_POSTFIELDS] = json_encode($params);
         }
 
         $ch = curl_init();
@@ -106,36 +106,36 @@ class iaCoinbase extends abstractModuleAdmin
 
         curl_close($ch);
 
-        empty($response) || $response = iaUtil::jsonDecode($response);
+        empty($response) || $response = json_decode($response, true);
 
-        return array($response, $status);
+        return [$response, $status];
     }
 
-    protected function _oauthRequest($action, array $postParams = array())
+    protected function _oauthRequest($action, array $postParams = [])
     {
         $url = $this->_composeUrl($action);
 
         return $this->_httpRequest($url, $postParams);
     }
 
-    protected function _apiRequest($action, array $params = array())
+    protected function _apiRequest($action, array $params = [])
     {
         $url = self::API_URL . $action;
-        $url .= '?' . http_build_query(array('access_token' => $this->getToken()->access_token));
+        $url .= '?' . http_build_query(['access_token' => $this->getToken()->access_token]);
 
         return $this->_httpRequest($url, $params, true);
     }
 
     public function obtainToken($code)
     {
-        list($response, $status) = $this->_oauthRequest('token', array(
+        list($response, $status) = $this->_oauthRequest('token', [
             'grant_type' => 'authorization_code',
             'code' => $code,
             'redirect_uri' => $this->_redirectUri,
             'client_id' => $this->getConfig('client_id'),
             'client_secret' => $this->getConfig('client_secret'),
             'scope' => 'request'
-        ));
+        ]);
 
         if (self::HTTP_STATUS_OK == $status) {
             $this->_setToken($response);
@@ -150,10 +150,10 @@ class iaCoinbase extends abstractModuleAdmin
 
     protected function _setToken($token)
     {
-        $_SESSION[self::SESSION_KEY_TOKEN] = array(
+        $_SESSION[self::SESSION_KEY_TOKEN] = [
             'timestamp' => time(),
             'token' => $token
-        );
+        ];
     }
 
     private function _isExpired($timestamp, $expireSeconds)
@@ -163,7 +163,7 @@ class iaCoinbase extends abstractModuleAdmin
 
     protected function _refreshToken()
     {
-//die('REFRESHING TOKEN...');
+        //die('REFRESHING TOKEN...');
     }
 
     public function getToken($plainArray = false)
@@ -185,8 +185,8 @@ class iaCoinbase extends abstractModuleAdmin
 
     public function createButton(array $transactionRecord)
     {
-        $params = array(
-            'button' => array(
+        $params = [
+            'button' => [
                 'name' => $transactionRecord['operation'],
                 'type' => 'buy_now',
                 'price_string' => (float)$transactionRecord['amount'],
@@ -194,8 +194,8 @@ class iaCoinbase extends abstractModuleAdmin
                 'custom' => $transactionRecord['id'],
                 'callback_url' => IA_URL . 'coinbase' . IA_URL_DELIMITER,
 //			'style' => 'none'
-            )
-        );
+            ]
+        ];
 
         list($response, $status) = $this->_apiRequest('buttons', $params);
 
